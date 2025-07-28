@@ -2,13 +2,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// --- PERUBAHAN: IMPORT BARU ---
-import { useParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { User, Home, Building, HeartHandshake, MapPin, Globe, Camera, Link as LinkIcon, TreePine, Store, Mountain, ShoppingCart } from 'lucide-react';
+// --- PERBAIKAN: Hapus 'User' dan 'Camera' yang tidak digunakan ---
+import { Home, Building, HeartHandshake, MapPin, Globe, Link as LinkIcon, TreePine, Store, Mountain, ShoppingCart } from 'lucide-react';
 
 // Definisikan semua tipe data yang dibutuhkan
 interface Aparatur { nama: string; jabatan: string; }
@@ -31,39 +30,6 @@ interface DusunDetail {
   usaha: Usaha[];
 }
 
-// --- FUNGSI BANTUAN UNTUK MEMBONGKAR DATA FIRESTORE ---
-function unwrapFirestoreValue(value: any): any {
-  if (value === null || value === undefined || typeof value !== 'object') {
-    return value;
-  }
-  if (value.stringValue !== undefined) return value.stringValue;
-  if (value.integerValue !== undefined) return parseInt(value.integerValue, 10);
-  if (value.doubleValue !== undefined) return parseFloat(value.doubleValue);
-  if (value.booleanValue !== undefined) return value.booleanValue;
-  if (value.nullValue !== undefined) return null;
-  if (value.timestampValue) return new Date(value.timestampValue);
-  if (value.arrayValue?.values) {
-    return value.arrayValue.values.map(unwrapFirestoreValue);
-  }
-  if (value.mapValue?.fields) {
-    const obj: { [key: string]: any } = {};
-    for (const key in value.mapValue.fields) {
-      obj[key] = unwrapFirestoreValue(value.mapValue.fields[key]);
-    }
-    return obj;
-  }
-  return value;
-}
-
-function unwrapFirestoreDoc(docData: any): any {
-    if (!docData) return null;
-    const unwrapped: { [key: string]: any } = {};
-    for (const key in docData) {
-        unwrapped[key] = unwrapFirestoreValue(docData[key]);
-    }
-    return unwrapped;
-}
-
 // Ikon TikTok sebagai komponen SVG
 const TikTokIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -71,26 +37,18 @@ const TikTokIcon = () => (
   </svg>
 );
 
-// --- PERUBAHAN: HAPUS `params` DARI PROPS ---
-export default function HalamanDetailDusun() {
-  // --- PERUBAHAN: GUNAKAN `useParams` HOOK ---
-  const params = useParams();
-  // Ambil slug dengan aman, menangani kasus jika slug adalah array
-  const slug = typeof params.slug === 'string' ? params.slug : Array.isArray(params.slug) ? params.slug[0] : '';
-
+export default function HalamanDetailDusun({ params }: { params: { slug: string } }) {
   const [dusun, setDusun] = useState<DusunDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!slug) return;
-
+    if (!params.slug) return;
     const fetchDetailDusun = async () => {
       try {
-        const q = query(collection(db, "dusun"), where("slug", "==", slug));
+        const q = query(collection(db, "dusun"), where("slug", "==", params.slug));
         const querySnapshot = await getDocs(q);
-        
         if (!querySnapshot.empty) {
-          const dusunData = unwrapFirestoreDoc(querySnapshot.docs[0].data());
+          const docData = querySnapshot.docs[0].data();
           
           let kepalaDusun = "Data tidak ditemukan";
           let urlFotoKadus = "https://placehold.co/150x150/cccccc/ffffff?text=Foto";
@@ -105,25 +63,24 @@ export default function HalamanDetailDusun() {
           }
 
           const dataLengkap = {
-            ...dusunData,
+            ...docData,
             kepalaDusun: kepalaDusun,
             urlFotoKadus: urlFotoKadus,
-            daftarRT: dusunData.daftarRT || [],
-            daftarRW: dusunData.daftarRW || [],
-            potensi: dusunData.potensi || { sda: [], umkm: [], pariwisata: [] },
-            fasilitas: dusunData.fasilitas || { pendidikan: [], ibadah: [], kesehatan: [] },
-            usaha: dusunData.usaha || [],
-            galeriFoto: dusunData.galeriFoto || [],
-            portalSosmed: dusunData.portalSosmed || {}
+            daftarRT: docData.daftarRT || [],
+            daftarRW: docData.daftarRW || [],
+            potensi: docData.potensi || { sda: [], umkm: [], pariwisata: [] },
+            fasilitas: docData.fasilitas || { pendidikan: [], ibadah: [], kesehatan: [] },
+            usaha: docData.usaha || [],
+            galeriFoto: docData.galeriFoto || [],
+            portalSosmed: docData.portalSosmed || {}
           };
           setDusun({ id: querySnapshot.docs[0].id, ...dataLengkap } as DusunDetail);
         }
       } catch (error) { console.error("Error fetching detail dusun: ", error); }
       finally { setLoading(false); }
     };
-    
     fetchDetailDusun();
-  }, [slug]);
+  }, [params.slug]);
 
   if (loading) return <div className="text-center p-10">Memuat detail dusun...</div>;
   if (!dusun) return notFound();
@@ -133,7 +90,7 @@ export default function HalamanDetailDusun() {
       <div className="container mx-auto px-6">
         <div className="text-center mb-12"><h1 className="text-5xl font-extrabold text-gray-800">Dusun {dusun.nama}</h1></div>
 
-        {/* Sisa kode JSX Anda tidak perlu diubah */}
+        {/* Aparatur Wilayah */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">Aparatur Wilayah</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
@@ -157,6 +114,7 @@ export default function HalamanDetailDusun() {
           </div>
         </section>
 
+        {/* Deskripsi & Potensi */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">Deskripsi & Potensi Unggulan</h2>
           <p className="text-lg text-center max-w-3xl mx-auto mb-10">{dusun.deskripsiLengkap}</p>
@@ -167,6 +125,7 @@ export default function HalamanDetailDusun() {
           </div>
         </section>
         
+        {/* Direktori Usaha */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">Direktori Usaha Dusun</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -183,6 +142,7 @@ export default function HalamanDetailDusun() {
           </div>
         </section>
 
+        {/* Portal & Galeri */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">Aktivitas & Galeri</h2>
           <div className="text-center mb-8 flex justify-center gap-4">
@@ -194,6 +154,7 @@ export default function HalamanDetailDusun() {
           </div>
         </section>
 
+        {/* Fasilitas Umum */}
         <section>
           <h2 className="text-3xl font-bold text-center mb-8">Fasilitas Umum</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -207,12 +168,12 @@ export default function HalamanDetailDusun() {
   );
 }
 
-// Helper components
+// --- PERBAIKAN: Tambahkan tipe eksplisit untuk props ---
 const PotensiKategori = ({ title, data, icon }: { title: string, data: Potensi[], icon: React.ReactNode }) => (
   <div className="bg-gray-50 p-4 rounded-lg">
     <h3 className="text-xl font-semibold mb-3 flex items-center">{icon} <span className="ml-2">{title}</span></h3>
     <div className="space-y-3">
-      {data && data.map(p => (
+      {data.map((p: Potensi) => (
         <div key={p.nama} className="bg-white p-3 rounded shadow">
           <Image src={p.gambar} alt={p.nama} width={300} height={150} className="w-full h-32 object-cover rounded mb-2" />
           <p className="font-bold">{p.nama}</p>
@@ -230,7 +191,7 @@ const FasilitasKategori = ({ title, data, icon }: { title: string, data: Fasilit
   <div className="bg-gray-50 p-4 rounded-lg">
     <h3 className="text-xl font-semibold mb-3 flex items-center">{icon} <span className="ml-2">{title}</span></h3>
     <ul className="space-y-2">
-      {data && data.map(f => (
+      {data.map((f: Fasilitas) => (
         <li key={f.nama} className="bg-white p-3 rounded shadow">
           <p className="font-bold">{f.nama}</p>
           <p className="text-sm text-gray-600">{f.alamat}</p>
@@ -240,4 +201,3 @@ const FasilitasKategori = ({ title, data, icon }: { title: string, data: Fasilit
     </ul>
   </div>
 );
- 
