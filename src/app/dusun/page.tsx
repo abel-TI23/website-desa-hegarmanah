@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore'; // Impor DocumentData
+import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin } from 'lucide-react';
@@ -17,6 +17,7 @@ interface Dusun {
   deskripsiSingkat: string;
 }
 
+// Komponen Skeleton Loading
 const ListSkeleton = () => (
     <div className="container mx-auto px-6 py-12">
         <div className="text-center mb-12">
@@ -54,22 +55,29 @@ export default function HalamanDaftarDusun() {
 
         const perangkatMap = new Map<string, string>();
         perangkatSnapshot.forEach(doc => {
-          const data: DocumentData = doc.data(); // Tipe eksplisit
+          const data = doc.data();
           if (data.jabatan && data.nama) {
             perangkatMap.set(data.jabatan, data.nama);
           }
         });
 
-        const data = dusunSnapshot.docs.map(doc => {
-          const dusunData: DocumentData = doc.data(); // Tipe eksplisit
+        // FIX: Menghapus penggunaan fungsi unwrapFirestoreData yang tidak perlu.
+        // doc.data() sudah mengembalikan objek JavaScript yang bersih.
+        const data = dusunSnapshot.docs.map((doc): Dusun => {
+          const dusunData: DocumentData = doc.data();
+          
           const jabatanKadus = "Kepala Dusun " + dusunData.nama;
           const namaKepalaDusun = perangkatMap.get(jabatanKadus) || "Data tidak ditemukan";
           
+          // Membangun objek secara eksplisit agar sesuai dengan interface Dusun
           return {
             id: doc.id,
-            ...dusunData,
+            nama: dusunData.nama || '',
+            slug: dusunData.slug || '',
             kepalaDusun: namaKepalaDusun,
-          } as Dusun;
+            urlFotoUtama: dusunData.urlFotoUtama || '',
+            deskripsiSingkat: dusunData.deskripsiSingkat || '',
+          };
         });
 
         setDaftarDusun(data);
@@ -97,30 +105,33 @@ export default function HalamanDaftarDusun() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {daftarDusun.map((dusun: Dusun) => (
-              <Link key={dusun.id} href={`/dusun/${dusun.slug}`} className="block group">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full transform hover:-translate-y-2 transition-transform duration-300">
-                  <div className="relative w-full h-56">
-                    <Image
-                      src={dusun.urlFotoUtama}
-                      alt={`Foto ${dusun.nama}`}
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <h2 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600">{dusun.nama}</h2>
-                    <div className="flex items-center text-gray-500 mt-2">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      <span>Kepala Dusun: {dusun.kepalaDusun}</span>
-                    </div>
-                    <p className="text-gray-600 mt-3 text-sm">
-                      {dusun.deskripsiSingkat}
-                    </p>
-                  </div>
+          {daftarDusun.map((dusun) => (
+            <Link key={dusun.id} href={`/dusun/${dusun.slug}`} className="block group">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full transform hover:-translate-y-2 transition-transform duration-300">
+                <div className="relative w-full h-56">
+                  {/* FIX: Mengubah properti Image agar sesuai dengan Next.js v13+ */}
+                  <Image
+                    src={dusun.urlFotoUtama}
+                    alt={`Foto ${dusun.nama}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{ objectFit: 'cover' }}
+                    priority={true}
+                  />
                 </div>
-              </Link>
-            ))}
+                <div className="p-5">
+                  <h2 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600">{dusun.nama}</h2>
+                  <div className="flex items-center text-gray-500 mt-2">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    <span>Kepala Dusun: {dusun.kepalaDusun}</span>
+                  </div>
+                  <p className="text-gray-600 mt-3 text-sm">
+                    {dusun.deskripsiSingkat}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
