@@ -8,9 +8,8 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Home, Building, HeartHandshake, MapPin, Globe, Link as LinkIcon, TreePine, Store, Mountain, ShoppingCart } from 'lucide-react';
 
-// --- PERBAIKAN: Mendefinisikan tipe untuk props halaman secara eksplisit ---
-// Ini adalah praktik yang baik dan menyelesaikan masalah tipe dari log build.
-type PageProps = {
+// --- PERBAIKAN: Mengganti nama tipe untuk menghindari konflik dengan tipe internal Next.js ---
+type DusunPageProps = {
   params: {
     slug: string;
   };
@@ -61,8 +60,8 @@ const TikTokIcon = () => (
   </svg>
 );
 
-// --- PERBAIKAN: Menggunakan tipe PageProps yang sudah didefinisikan ---
-export default function HalamanDetailDusun({ params }: PageProps) {
+// --- PERBAIKAN: Menggunakan tipe DusunPageProps yang sudah diganti namanya ---
+export default function HalamanDetailDusun({ params }: DusunPageProps) {
   const [dusun, setDusun] = useState<DusunDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -78,8 +77,6 @@ export default function HalamanDetailDusun({ params }: PageProps) {
           let kepalaDusun = "Data tidak ditemukan";
           let urlFotoKadus = "https://placehold.co/150x150/cccccc/ffffff?text=Foto";
           
-          // --- PERBAIKAN: Menggunakan 'docData.nama' bukan 'dusunData.nama' ---
-          // Variabel yang benar dari data Firestore adalah 'docData'.
           const kadusDocId = `kepala-dusun-${docData.nama.toLowerCase().replace(/\s+/g, '-')}`;
           const kadusDocRef = doc(db, "perangkatDesa", kadusDocId);
           const kadusDocSnap = await getDoc(kadusDocRef);
