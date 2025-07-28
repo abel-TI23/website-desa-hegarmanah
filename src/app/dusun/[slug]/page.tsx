@@ -6,14 +6,38 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-// --- PERBAIKAN: Hapus 'User' dan 'Camera' yang tidak digunakan ---
 import { Home, Building, HeartHandshake, MapPin, Globe, Link as LinkIcon, TreePine, Store, Mountain, ShoppingCart } from 'lucide-react';
 
+// --- PERBAIKAN: Mendefinisikan tipe untuk props halaman secara eksplisit ---
+// Ini adalah praktik yang baik dan menyelesaikan masalah tipe dari log build.
+type PageProps = {
+  params: {
+    slug: string;
+  };
+};
+
 // Definisikan semua tipe data yang dibutuhkan
-interface Aparatur { nama: string; jabatan: string; }
-interface Potensi { nama: string; gambar: string; peta: string; sosmed?: string; }
-interface Fasilitas { nama: string; alamat: string; peta: string; }
-interface Usaha { nama: string; gambar: string; ecommerce?: string; sosmed?: string; }
+interface Aparatur {
+  nama: string;
+  jabatan: string;
+}
+interface Potensi {
+  nama: string;
+  gambar: string;
+  peta: string;
+  sosmed?: string;
+}
+interface Fasilitas {
+  nama: string;
+  alamat: string;
+  peta: string;
+}
+interface Usaha {
+  nama: string;
+  gambar: string;
+  ecommerce?: string;
+  sosmed?: string;
+}
 
 interface DusunDetail {
   id: string;
@@ -37,7 +61,8 @@ const TikTokIcon = () => (
   </svg>
 );
 
-export default function HalamanDetailDusun({ params }: { params: { slug: string } }) {
+// --- PERBAIKAN: Menggunakan tipe PageProps yang sudah didefinisikan ---
+export default function HalamanDetailDusun({ params }: PageProps) {
   const [dusun, setDusun] = useState<DusunDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +78,9 @@ export default function HalamanDetailDusun({ params }: { params: { slug: string 
           let kepalaDusun = "Data tidak ditemukan";
           let urlFotoKadus = "https://placehold.co/150x150/cccccc/ffffff?text=Foto";
           
-          const kadusDocId = `kepala-dusun-${dusunData.nama.toLowerCase().replace(/\s+/g, '-')}`;
+          // --- PERBAIKAN: Menggunakan 'docData.nama' bukan 'dusunData.nama' ---
+          // Variabel yang benar dari data Firestore adalah 'docData'.
+          const kadusDocId = `kepala-dusun-${docData.nama.toLowerCase().replace(/\s+/g, '-')}`;
           const kadusDocRef = doc(db, "perangkatDesa", kadusDocId);
           const kadusDocSnap = await getDoc(kadusDocRef);
 
@@ -168,7 +195,6 @@ export default function HalamanDetailDusun({ params }: { params: { slug: string 
   );
 }
 
-// --- PERBAIKAN: Tambahkan tipe eksplisit untuk props dan parameter map ---
 const PotensiKategori = ({ title, data, icon }: { title: string, data: Potensi[], icon: React.ReactNode }) => (
   <div className="bg-gray-50 p-4 rounded-lg">
     <h3 className="text-xl font-semibold mb-3 flex items-center">{icon} <span className="ml-2">{title}</span></h3>
