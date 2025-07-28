@@ -103,11 +103,11 @@ export default function HalamanDetailDusun({ params }: { params: { slug: string 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <h4 className="text-xl font-semibold mb-3">Ketua RW ({dusun.daftarRW.length})</h4>
-                  <ul className="space-y-2 text-sm">{dusun.daftarRW.map(rw => <li key={rw.nama}>{rw.jabatan}: {rw.nama}</li>)}</ul>
+                  <ul className="space-y-2 text-sm">{dusun.daftarRW.map((rw: Aparatur) => <li key={rw.nama}>{rw.jabatan}: {rw.nama}</li>)}</ul>
                 </div>
                 <div>
                   <h4 className="text-xl font-semibold mb-3">Ketua RT ({dusun.daftarRT.length})</h4>
-                  <ul className="space-y-2 text-sm">{dusun.daftarRT.map(rt => <li key={rt.nama}>{rt.jabatan}: {rt.nama}</li>)}</ul>
+                  <ul className="space-y-2 text-sm">{dusun.daftarRT.map((rt: Aparatur) => <li key={rt.nama}>{rt.jabatan}: {rt.nama}</li>)}</ul>
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function HalamanDetailDusun({ params }: { params: { slug: string 
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">Direktori Usaha Dusun</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {dusun.usaha.map(u => (
+            {dusun.usaha.map((u: Usaha) => (
               <div key={u.nama} className="bg-white p-3 rounded-lg shadow-md text-center border">
                 <Image src={u.gambar} alt={u.nama} width={200} height={200} className="w-full h-24 object-cover rounded mb-2" />
                 <p className="font-bold text-sm">{u.nama}</p>
@@ -150,7 +150,7 @@ export default function HalamanDetailDusun({ params }: { params: { slug: string 
             {dusun.portalSosmed.tiktok && <a href={dusun.portalSosmed.tiktok} target="_blank" rel="noopener noreferrer" className="bg-black text-white p-3 rounded-full hover:bg-gray-800"><TikTokIcon /></a>}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {dusun.galeriFoto.map((src, i) => <Image key={i} src={src} alt={`Galeri ${i+1}`} width={400} height={400} className="rounded-lg shadow-md w-full h-full object-cover" />)}
+            {dusun.galeriFoto.map((src: string, i: number) => <Image key={i} src={src} alt={`Galeri ${i+1}`} width={400} height={400} className="rounded-lg shadow-md w-full h-full object-cover" />)}
           </div>
         </section>
 
@@ -168,7 +168,7 @@ export default function HalamanDetailDusun({ params }: { params: { slug: string 
   );
 }
 
-// --- PERBAIKAN: Tambahkan tipe eksplisit untuk props ---
+// --- PERBAIKAN: Tambahkan tipe eksplisit untuk props dan parameter map ---
 const PotensiKategori = ({ title, data, icon }: { title: string, data: Potensi[], icon: React.ReactNode }) => (
   <div className="bg-gray-50 p-4 rounded-lg">
     <h3 className="text-xl font-semibold mb-3 flex items-center">{icon} <span className="ml-2">{title}</span></h3>
