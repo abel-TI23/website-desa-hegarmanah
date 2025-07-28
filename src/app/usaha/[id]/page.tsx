@@ -1,14 +1,12 @@
 // src/app/usaha/[id]/page.tsx
 
 import { db } from '@/lib/firebase';
-// FIX: Menghapus 'DocumentData' yang tidak digunakan
 import { doc, getDoc } from 'firebase/firestore'; 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-// FIX: Mengimpor komponen Image dari Next.js
 import Image from 'next/image';
 
-// 1. Definisikan struktur data Usaha di sini
+// Definisikan struktur data Usaha di sini
 interface Usaha {
   id: string;
   namaUsaha: string;
@@ -27,13 +25,11 @@ type DetailUsahaPageProps = {
   };
 };
 
-// 2. Perbarui fungsi untuk menggunakan tipe Usaha
 async function getUsahaById(id: string): Promise<Usaha | null> {
   const docRef = doc(db, 'usahaPenduduk', id);
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    // 3. Gunakan 'as Usaha' untuk memberitahu TypeScript bahwa data ini sesuai dengan interface Usaha
     return { id: docSnap.id, ...docSnap.data() } as Usaha;
   } else {
     return null;
@@ -56,7 +52,6 @@ export default async function DetailUsahaPage({ params }: DetailUsahaPageProps) 
         
         <div className="flex flex-col md:flex-row items-start gap-8 mb-8">
           {usaha.urlLogo && (
-            // FIX: Mengganti tag <img> dengan komponen <Image> untuk optimasi
             <Image
               src={usaha.urlLogo}
               alt={`Logo ${usaha.namaUsaha}`}
