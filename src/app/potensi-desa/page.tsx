@@ -1,4 +1,4 @@
-// src/app/potensi-desa/page.tsx
+// src/app/potensi-desa/page.tsx new
 import { Briefcase, Leaf, Users } from 'lucide-react';
 
 // Data diambil dari dokumen profil desa
