@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, DocumentData } from 'firebase/firestore'; // Impor DocumentData
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin } from 'lucide-react';
@@ -17,48 +17,6 @@ interface Dusun {
   deskripsiSingkat: string;
 }
 
-// --- FUNGSI BANTUAN YANG DIPERBAIKI ---
-// Fungsi ini akan "membongkar" format data dari Firestore
-// menjadi objek JavaScript yang bersih dan mudah digunakan.
-function unwrapFirestoreData(data: any): any {
-  if (!data) return data;
-
-  // Cek apakah ini wrapper untuk tipe data primitif
-  if (data.stringValue !== undefined) return data.stringValue;
-  if (data.integerValue !== undefined) return parseInt(data.integerValue, 10);
-  if (data.doubleValue !== undefined) return data.doubleValue;
-  if (data.booleanValue !== undefined) return data.booleanValue;
-  if (data.nullValue !== undefined) return null;
-
-  // Cek apakah ini wrapper untuk Array
-  if (data.arrayValue?.values) {
-    return data.arrayValue.values.map(unwrapFirestoreData);
-  }
-
-  // Cek apakah ini wrapper untuk Map (objek bersarang)
-  if (data.mapValue?.fields) {
-    const unwrappedObject: { [key: string]: any } = {};
-    for (const key in data.mapValue.fields) {
-      unwrappedObject[key] = unwrapFirestoreData(data.mapValue.fields[key]);
-    }
-    return unwrappedObject;
-  }
-
-  // Jika bukan tipe di atas, anggap ini adalah objek dokumen itu sendiri.
-  // Ulangi proses untuk setiap properti di dalamnya.
-  if (typeof data === 'object') {
-    const unwrappedObject: { [key: string]: any } = {};
-    for (const key in data) {
-      unwrappedObject[key] = unwrapFirestoreData(data[key]);
-    }
-    return unwrappedObject;
-  }
-
-  return data;
-}
-
-
-// Komponen Skeleton Loading yang lebih baik untuk halaman daftar
 const ListSkeleton = () => (
     <div className="container mx-auto px-6 py-12">
         <div className="text-center mb-12">
@@ -96,17 +54,14 @@ export default function HalamanDaftarDusun() {
 
         const perangkatMap = new Map<string, string>();
         perangkatSnapshot.forEach(doc => {
-          const data = doc.data();
+          const data: DocumentData = doc.data(); // Tipe eksplisit
           if (data.jabatan && data.nama) {
             perangkatMap.set(data.jabatan, data.nama);
           }
         });
 
         const data = dusunSnapshot.docs.map(doc => {
-          // "Bongkar" data mentah menjadi objek JavaScript yang bersih
-          const dusunData = unwrapFirestoreData(doc.data());
-          
-          // Sekarang dusunData.nama adalah string, logika ini aman
+          const dusunData: DocumentData = doc.data(); // Tipe eksplisit
           const jabatanKadus = "Kepala Dusun " + dusunData.nama;
           const namaKepalaDusun = perangkatMap.get(jabatanKadus) || "Data tidak ditemukan";
           
@@ -142,31 +97,30 @@ export default function HalamanDaftarDusun() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {daftarDusun.map((dusun) => (
-            // Sekarang dusun.slug adalah string, link ini akan bekerja dengan benar
-            <Link key={dusun.id} href={`/dusun/${dusun.slug}`} className="block group">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full transform hover:-translate-y-2 transition-transform duration-300">
-                <div className="relative w-full h-56">
-                  <Image
-                    src={dusun.urlFotoUtama}
-                    alt={`Foto ${dusun.nama}`}
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </div>
-                <div className="p-5">
-                  <h2 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600">{dusun.nama}</h2>
-                  <div className="flex items-center text-gray-500 mt-2">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    <span>Kepala Dusun: {dusun.kepalaDusun}</span>
+          {daftarDusun.map((dusun: Dusun) => (
+              <Link key={dusun.id} href={`/dusun/${dusun.slug}`} className="block group">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full transform hover:-translate-y-2 transition-transform duration-300">
+                  <div className="relative w-full h-56">
+                    <Image
+                      src={dusun.urlFotoUtama}
+                      alt={`Foto ${dusun.nama}`}
+                      layout="fill"
+                      objectFit="cover"
+                    />
                   </div>
-                  <p className="text-gray-600 mt-3 text-sm">
-                    {dusun.deskripsiSingkat}
-                  </p>
+                  <div className="p-5">
+                    <h2 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600">{dusun.nama}</h2>
+                    <div className="flex items-center text-gray-500 mt-2">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span>Kepala Dusun: {dusun.kepalaDusun}</span>
+                    </div>
+                    <p className="text-gray-600 mt-3 text-sm">
+                      {dusun.deskripsiSingkat}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
         </div>
       </div>
     </div>
