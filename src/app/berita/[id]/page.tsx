@@ -8,33 +8,23 @@ import { notFound } from 'next/navigation';
 interface Berita {
   id: string;
   judul: string;
-  isi: string | string[]; // sekarang bisa string atau array of paragraph
+  isi: string | string[];
   urlGambar?: string;
-  tanggal: {
-    seconds: number;
-    nanoseconds: number;
-  };
+  tanggal: { seconds: number; nanoseconds?: number };
 }
 
 type DetailBeritaPageProps = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 };
 
 async function getBeritaById(id: string): Promise<Berita | null> {
   const docRef = doc(db, 'berita', id);
-  const docSnap = await getDoc(docRef);
-
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Berita;
-  } else {
-    return null;
-  }
+  const snap = await getDoc(docRef);
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as Berita) : null;
 }
 
 function formatTanggal(timestamp: { seconds: number }) {
-  return new Date(timestamp.seconds * 1000).toLocaleDateString('id-ID', {
+  return new Date(timestamp.seconds * 1000).toLocaleDateString('id‑ID', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -42,12 +32,11 @@ function formatTanggal(timestamp: { seconds: number }) {
   });
 }
 
-export default async function DetailBeritaPage({ params }: DetailBeritaPageProps) {
-  const berita = await getBeritaById(params.id);
+export default async function DetailBeritaPage(props: DetailBeritaPageProps) {
+  const { id } = await props.params;  // ✨ await params untuk mengakses id
+  const berita = await getBeritaById(id);
 
-  if (!berita) {
-    notFound();
-  }
+  if (!berita) notFound();
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -71,12 +60,10 @@ export default async function DetailBeritaPage({ params }: DetailBeritaPageProps
           <p className="text-gray-500 mt-2 mb-6">
             Dipublikasikan pada {formatTanggal(berita.tanggal)}
           </p>
-
-          {/* Menampilkan isi berita lengkap */}
           <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
             {Array.isArray(berita.isi)
-              ? berita.isi.map((paragraf, idx) => (
-                  <p key={idx} dangerouslySetInnerHTML={{ __html: paragraf }} />
+              ? berita.isi.map((par, idx) => (
+                  <p key={idx} dangerouslySetInnerHTML={{ __html: par }} />
                 ))
               : <p dangerouslySetInnerHTML={{ __html: berita.isi }} />}
           </div>
