@@ -52,12 +52,13 @@ export default function HalamanProfilDesa() {
             <div className="space-y-8">
               <div className="bg-blue-50 p-6 rounded-lg shadow">
                 <div className="flex items-center mb-3"><Eye className="w-8 h-8 text-blue-500" /><h3 className="text-2xl font-bold ml-3 text-blue-800">Visi</h3></div>
-                <p className="text-gray-700 italic">"{profil.visi}"</p>
+                {/* FIX: Mengganti kutip ganda dengan &quot; */}
+                <p className="text-gray-700 italic">&quot;{profil.visi}&quot;</p>
               </div>
               <div className="bg-green-50 p-6 rounded-lg shadow">
                 <div className="flex items-center mb-3"><Target className="w-8 h-8 text-green-500" /><h3 className="text-2xl font-bold ml-3 text-green-800">Misi</h3></div>
                 {/* 'whitespace-pre-line' akan menjaga baris baru dari Google Form */}
-                <p className="text-white-700 whitespace-pre-line">{profil.misi}</p>
+                <p className="text-gray-700 whitespace-pre-line">{profil.misi}</p>
               </div>
             </div>
           ) : (
