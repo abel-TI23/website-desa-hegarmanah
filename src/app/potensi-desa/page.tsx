@@ -1,5 +1,5 @@
 // src/app/potensi-desa/page.tsx
-import { Briefcase, Leaf, Users, Building2 } from 'lucide-react';
+import { Briefcase, Leaf, Users } from 'lucide-react';
 
 // Data diambil dari dokumen profil desa
 const potensiData = {
