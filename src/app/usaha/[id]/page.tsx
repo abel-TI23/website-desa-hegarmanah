@@ -1,9 +1,12 @@
 // src/app/usaha/[id]/page.tsx
 
 import { db } from '@/lib/firebase';
-import { doc, getDoc, DocumentData } from 'firebase/firestore'; // Tambahkan DocumentData
+// FIX: Menghapus 'DocumentData' yang tidak digunakan
+import { doc, getDoc } from 'firebase/firestore'; 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+// FIX: Mengimpor komponen Image dari Next.js
+import Image from 'next/image';
 
 // 1. Definisikan struktur data Usaha di sini
 interface Usaha {
@@ -47,15 +50,18 @@ export default async function DetailUsahaPage({ params }: DetailUsahaPageProps) 
   return (
     <div className="container mx-auto p-8">
       <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
-        <Link href="/" className="text-blue-500 hover:underline mb-6 inline-block">
+        <Link href="/usaha" className="text-blue-500 hover:underline mb-6 inline-block">
           &larr; Kembali ke Daftar Usaha
         </Link>
         
         <div className="flex flex-col md:flex-row items-start gap-8 mb-8">
           {usaha.urlLogo && (
-            <img 
-              src={usaha.urlLogo} 
-              alt={`Logo ${usaha.namaUsaha}`} 
+            // FIX: Mengganti tag <img> dengan komponen <Image> untuk optimasi
+            <Image
+              src={usaha.urlLogo}
+              alt={`Logo ${usaha.namaUsaha}`}
+              width={400} // Tentukan lebar gambar (bisa disesuaikan)
+              height={400} // Tentukan tinggi gambar (bisa disesuaikan)
               className="w-full md:w-1/3 h-auto object-cover rounded-lg border"
             />
           )}
