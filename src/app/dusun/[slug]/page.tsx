@@ -1,7 +1,11 @@
 // src/app/dusun/[slug]/page.tsx
-'use client';
 
-// --- LANGKAH DEBUGGING: Menggunakan tipe yang paling sederhana dan benar ---
+// --- LANGKAH DEBUGGING TERAKHIR: Menjadikan halaman sebagai Server Component ---
+// Dengan menghapus 'use client', kita menjadikan ini Server Component,
+// bentuk paling dasar dari sebuah halaman di Next.js App Router.
+// Jika build dengan kode ini TETAP GAGAL, maka masalahnya hampir pasti
+// berada di luar kode aplikasi (misalnya cache Vercel, bug versi Next.js, dll.)
+
 // Kita mendefinisikan tipe props untuk halaman dinamis ini.
 type DusunPageProps = {
   params: {
@@ -9,16 +13,6 @@ type DusunPageProps = {
   };
 };
 
-/**
- * --- LANGKAH DEBUGGING: Menyederhanakan Komponen ---
- * Kami mengganti seluruh logika kompleks dengan satu baris JSX sederhana.
- * Ini bertujuan untuk memeriksa apakah error build berasal dari pengetikan (typing)
- * atau dari logika di dalam komponen (useState, useEffect, Firebase, dll).
- * * Jika build dengan kode ini BERHASIL, berarti masalah ada di dalam logika
- * yang kita hapus sementara.
- * Jika build dengan kode ini TETAP GAGAL, berarti masalahnya lebih dalam
- * (kemungkinan di konfigurasi tsconfig.json atau bug di versi Next.js).
- */
 export default function HalamanDetailDusun({ params }: DusunPageProps) {
   return (
     <div className="bg-white py-12">
@@ -26,7 +20,9 @@ export default function HalamanDetailDusun({ params }: DusunPageProps) {
         <h1 className="text-5xl font-extrabold text-gray-800">
           Halaman Uji Coba untuk Dusun: {params.slug}
         </h1>
-        <p className="mt-4">Jika Anda melihat halaman ini, berarti proses build berhasil.</p>
+        <p className="mt-4">
+          Ini adalah Server Component. Jika Anda melihat halaman ini, berarti proses build berhasil.
+        </p>
       </div>
     </div>
   );
